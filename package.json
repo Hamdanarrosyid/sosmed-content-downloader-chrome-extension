@@ -23,6 +23,7 @@
     "wxt": "^0.20.6"
   },
   "dependencies": {
+    "file-type": "^21.0.0",
     "jszip": "^3.10.1"
   }
 }

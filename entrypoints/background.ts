@@ -1,4 +1,5 @@
 import JSZip from "jszip";
+import {fileTypeFromBuffer} from 'file-type';
 
 interface DownloadUrlInfo {
   url: string;
@@ -21,21 +22,15 @@ export default defineBackground(() => {
               throw new Error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
             }
             const arrayBuffer = await response.arrayBuffer();
-            let extension = 'dat'; // default extension for unknown binary data
-            const contentType = response.headers.get('Content-Type');
-            if (contentType) {
-              if (contentType.includes('image/png')) {
-                extension = 'png';
-              } else if (contentType.includes('image/jpeg')) {
-                extension = 'jpg';
-              } else if (contentType.includes('video/mp4')) {
-                extension = 'mp4';
-              } else if (contentType.includes('video/webm')) {
-                extension = 'webm';
-              } else if (contentType.includes('video/quicktime')) {
-                extension = 'mov';
-              }
+            const file_ext = await fileTypeFromBuffer(arrayBuffer);
+            let extension = 'dat'
+
+            if (file_ext && file_ext.ext) {
+              extension = file_ext.ext;
+            } else {
+              console.warn(`Could not determine file type for ${url}, defaulting to .dat`);
             }
+
             zip.file(`media_${index + 1}.${extension}`, arrayBuffer);
           } catch (error) {
             console.error(`Error downloading ${url}:`, error);
